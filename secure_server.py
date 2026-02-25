@@ -1,1042 +1,598 @@
-<!doctype html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Case Stars</title>
-<style>
-:root{
-  --bg-a:#07122f;
-  --bg-b:#0f2b66;
-  --panel:#132959;
-  --panel-2:#1c3b77;
-  --line:#3a65ad;
-  --text:#edf4ff;
-  --muted:#a8bfeb;
-  --accent:#2fd9b7;
-  --accent-2:#8cf2db;
-  --danger:#ff728f;
-  --gold:#ffebad;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  min-height:100vh;
-  overflow-x:hidden;
-  color:var(--text);
-  font-family:"Segoe UI",Tahoma,sans-serif;
-  background:
-    radial-gradient(1000px 420px at 14% -15%,rgba(47,217,183,.2),transparent 60%),
-    radial-gradient(900px 420px at 88% -18%,rgba(255,218,130,.16),transparent 62%),
-    linear-gradient(160deg,var(--bg-a),var(--bg-b));
-}
-.hidden{display:none!important}
-.overlay{
-  position:fixed;
-  inset:0;
-  z-index:90;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:14px;
-  background:rgba(6,10,22,.84);
-  backdrop-filter:blur(6px);
-}
-#preloader .box,.modal,.sheet{
-  width:100%;
-  max-width:820px;
-  min-width:0;
-  border:1px solid var(--line);
-  border-radius:18px;
-  background:linear-gradient(180deg,#142a58,#102247);
-  box-shadow:0 20px 48px rgba(0,0,0,.38);
-}
-#preloader .box{max-width:460px;padding:22px;text-align:center}
-#preloader img{width:56px;height:56px;object-fit:contain}
-#preloader h1{margin:8px 0 6px;font-size:22px}
-#preloader p{margin:0 0 10px;color:var(--muted);font-size:13px}
-.bar{height:10px;border-radius:999px;overflow:hidden;border:1px solid #446eb6;background:#0d1f43}
-.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#f6cf70);transition:width .18s linear}
-.app{max-width:1100px;margin:0 auto;padding:14px 14px 20px}
-.top{
-  position:sticky;
-  top:0;
-  z-index:20;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  border:1px solid #3f69af;
-  border-radius:15px;
-  padding:10px;
-  background:linear-gradient(180deg,rgba(12,22,49,.95),rgba(12,22,49,.72));
-  backdrop-filter:blur(8px);
-}
-.mode-badge{
-  margin-left:8px;
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  border:1px solid #4d74b8;
-  border-radius:999px;
-  padding:2px 7px;
-  font-size:10px;
-  color:#d9e8ff;
-  background:#0e2148;
-}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,var(--accent-2),var(--accent));display:grid;place-items:center;box-shadow:0 10px 26px rgba(47,217,183,.35)}
-.logo svg{width:18px;height:18px;fill:#05241d}
-.brand b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brand span{display:block;color:var(--muted);font-size:11px}
-.prof{display:flex;align-items:center;gap:8px;border:1px solid #3f69b0;border-radius:12px;background:#11244d;padding:7px 9px}
-.prof .meta{text-align:right;line-height:1.15;min-width:0}
-.prof b{display:block;max-width:140px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prof small{font-size:10px;color:var(--muted)}
-.stars{display:flex;align-items:center;gap:6px;border:1px solid #466fb4;border-radius:10px;background:#0d1f43;padding:5px 8px;font-size:12px;font-weight:800;color:var(--gold)}
-.stars img{width:15px;height:15px;object-fit:contain}
-.tabs{margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.tabs button{border:1px solid #4067ae;border-radius:11px;background:#18325f;color:#d9e9ff;padding:10px;font-weight:700;cursor:pointer;transition:.2s filter,.2s transform}
-.tabs button:hover{filter:brightness(1.06)}
-.tabs button:active{transform:translateY(1px)}
-.tabs button.active{background:linear-gradient(180deg,var(--accent-2),var(--accent));color:#08231c;border-color:transparent}
-main{margin-top:12px}
-.view{display:none}
-.view.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-.case{
-  border:1px solid var(--line);
-  border-radius:16px;
-  overflow:hidden;
-  background:linear-gradient(180deg,var(--panel),var(--panel-2));
-  min-height:320px;
-  display:flex;
-  flex-direction:column;
-  transition:.2s transform,.2s box-shadow;
-  animation:cardIn .45s ease both;
-}
-.case:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.26)}
-.case .pic{height:136px;display:grid;place-items:center;padding:10px 10px 2px;background:radial-gradient(420px 170px at 50% -10%,rgba(255,255,255,.14),transparent 68%)}
-.case .pic img{max-width:100%;max-height:116px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35));pointer-events:none}
-.case .body{padding:12px;display:grid;gap:9px;flex:1;align-content:start}
-.case h3{margin:0;font-size:15px}
-.price{display:flex;align-items:center;gap:6px;font-weight:700;font-size:12px;color:var(--gold);background:#0f2145;border:1px solid #3c63a8;border-radius:10px;padding:6px 8px;position:relative;z-index:2}
-.price img{width:14px;height:14px}
-.drops{display:flex;flex-wrap:wrap;gap:6px}
-.drop{display:flex;align-items:center;gap:4px;border:1px solid #3f65a8;border-radius:999px;background:#10254d;padding:3px 7px;font-size:11px}
-.drop img{width:13px;height:13px;object-fit:contain}
-button{border:0;border-radius:10px;padding:9px 12px;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(180deg,var(--accent-2),var(--accent));color:#07221a;transition:.2s filter,.2s transform,.2s opacity}
-button:hover{filter:brightness(1.06)}
-button:active{transform:translateY(1px)}
-button:disabled{opacity:.55;cursor:not-allowed}
-.muted{background:#2c487f;color:#dbe8ff}
-.danger{background:linear-gradient(180deg,#ff9fb2,var(--danger));color:#3d1421}
-.wrap{border:1px solid var(--line);border-radius:16px;padding:12px;background:linear-gradient(180deg,var(--panel),var(--panel-2))}
-.head{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.meta{color:var(--muted);font-size:12px}
-.inv{display:grid;gap:9px}
-.item{display:grid;grid-template-columns:64px 1fr;gap:10px;border:1px solid #3d64a8;border-radius:12px;padding:9px;background:#10244c}
-.ibox{width:64px;height:64px;display:grid;place-items:center;border:1px solid #375d9f;border-radius:10px;background:#0d1f42}
-.ibox img{width:100%;height:100%;object-fit:contain;padding:4px}
-.icont{display:grid;gap:6px;min-width:0}
-.itop{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.itop h4{margin:0;font-size:13px}
-.iid{font-size:10px;color:var(--muted)}
-.act{display:flex;flex-wrap:wrap;gap:6px}
-.act button{padding:7px 9px;font-size:12px}
-.empty{border:1px dashed #4266ab;border-radius:12px;padding:22px;background:#0f2148;color:var(--muted);text-align:center}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
-.stat{border:1px solid #3e64a8;border-radius:11px;background:#10244b;padding:9px}
-.stat span{display:block;font-size:11px;color:var(--muted)}
-.stat b{font-size:17px}
-.list{margin-top:10px;border:1px solid #3e64a8;border-radius:12px;overflow:hidden}
-.row{display:flex;justify-content:space-between;gap:8px;padding:9px;border-bottom:1px solid #2a4b86;background:#10244b;font-size:13px}
-.row:last-child{border-bottom:0}
-.row small{color:var(--muted)}
-.sheet{padding:14px;position:relative;overflow:hidden}
-.rhead{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.stage{position:relative;border:1px solid #466fb5;border-radius:13px;background:linear-gradient(180deg,#10234a,#0c1a38);padding:12px;overflow:hidden}
-.arrow{position:absolute;top:2px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;border-top:18px solid #fff;z-index:5;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
-.win{position:relative;overflow:hidden;height:102px;display:flex;align-items:center;border:1px solid #3f63a5;border-radius:11px;background:#0d1d3f;min-width:0}
-.win::before,.win::after{content:"";position:absolute;top:0;bottom:0;width:74px;z-index:3;pointer-events:none}
-.win::before{left:0;background:linear-gradient(90deg,#0d1d3f,rgba(13,29,63,0))}
-.win::after{right:0;background:linear-gradient(270deg,#0d1d3f,rgba(13,29,63,0))}
-.track{display:flex;gap:8px;padding:0 24px;transform:translate3d(0,0,0);will-change:transform}
-.slot{width:84px;min-width:84px;height:84px;border:1px solid #4b72b8;border-radius:10px;background:#132a58;display:grid;place-items:center;position:relative;overflow:hidden}
-.slot img{width:66px;height:66px;object-fit:contain;pointer-events:none}
-.slot span{position:absolute;left:2px;right:2px;bottom:3px;text-align:center;font-size:9px;color:#d1e2ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rfoot{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.r-actions{display:flex;gap:8px;flex-wrap:wrap}
-.res{min-height:18px;font-size:14px;color:#d6e7ff}
-.panel{width:100%;max-width:430px;padding:18px}
-.panel h3{margin:0 0 6px}
-.panel p{margin:0 0 10px;color:var(--muted);font-size:13px}
-.fld{display:grid;gap:7px}
-.fld label{font-size:12px;color:var(--muted)}
-input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);outline:none;background:#0f2146;color:var(--text);font-size:14px}
-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,217,183,.18)}
-.err{font-size:12px;color:#ffd4dd;min-height:16px}
-.line{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
-.toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,22px);opacity:0;pointer-events:none;z-index:100;border:1px solid #4169ae;border-radius:10px;background:#10244b;padding:9px 12px;font-size:13px;max-width:min(92vw,560px);text-align:center;transition:.24s opacity,.24s transform}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-@keyframes cardIn{from{opacity:.0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
-@media (max-width:720px){
-  .app{padding:9px 9px 16px}
-  .cards{grid-template-columns:repeat(auto-fill,minmax(166px,1fr));gap:10px}
-  .case{min-height:292px}
-  .case .pic{height:116px}
-  .case .pic img{max-height:98px}
-  .item{grid-template-columns:56px 1fr}
-  .ibox{width:56px;height:56px}
-  .win{height:86px}
-  .slot{width:72px;min-width:72px;height:72px}
-  .slot img{width:56px;height:56px}
-  .prof b{max-width:84px}
-}
-</style>
-</head>
-<body>
-<div id="preloader" class="overlay">
-  <div class="box">
-    <img src="Icons/Звезда.png" alt="star">
-    <h1>Case Stars</h1>
-    <p id="loadText">Загрузка иконок 0%</p>
-    <div class="bar"><span id="loadBar"></span></div>
-  </div>
-</div>
+#!/usr/bin/env python3
+import json
+import mimetypes
+import os
+import random
+import re
+import threading
+import time
+import uuid
+from copy import deepcopy
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 
-<div id="auth" class="overlay hidden">
-  <div class="modal panel">
-    <h3>Создание профиля</h3>
-    <p>Ник: только английские буквы, цифры и _. Ник должен быть уникальным.</p>
-    <form id="authForm">
-      <div class="fld">
-        <label for="nick">Ник</label>
-        <input id="nick" maxlength="20" autocomplete="off" placeholder="PlayerOne">
-      </div>
-      <div id="authErr" class="err"></div>
-      <button type="submit">Создать профиль</button>
-    </form>
-  </div>
-</div>
+BASE_DIR = Path(__file__).resolve().parent
+INDEX_PATH = BASE_DIR / "index.html"
+ICONS_DIR = BASE_DIR / "Icons"
+DATA_PATH = BASE_DIR / "progress" / "progress.json"
 
-<div id="app" class="app hidden">
-  <header class="top">
-    <div class="brand">
-      <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2l2.7 5.46L21 8.37l-4.5 4.38 1.06 6.2L12 16.12 6.44 19l1.06-6.25L3 8.37l6.3-.91L12 2z"/></svg></div>
-      <div><b>Case Stars Simulator</b><span>Кейсы, инвентарь, подарки <span id="modeMark" class="mode-badge">...</span></span></div>
-    </div>
-    <div class="prof">
-      <div class="meta"><b id="hNick">-</b><small id="hId">ID: -</small></div>
-      <div class="stars"><img src="Icons/Звезда.png" alt="star"><span id="hStars">0</span></div>
-    </div>
-  </header>
+HOST = os.getenv("CASE_HOST", "0.0.0.0")
+PORT = int(os.getenv("CASE_PORT", "8080"))
+RATE_LIMIT_RPM = int(os.getenv("CASE_RATE_LIMIT_RPM", "120"))
+DEV_TOKEN = os.getenv("CASE_DEV_TOKEN", "")
 
-  <nav class="tabs">
-    <button class="active" data-v="cases">Кейсы</button>
-    <button data-v="inventory">Инвентарь</button>
-    <button data-v="profile">Профиль</button>
-  </nav>
+PASSIVE_MS = 300000
+PASSIVE_ADD = 5
+SELL_MS = 180000
 
-  <main>
-    <section id="v-cases" class="view active"><div id="cases" class="cards"></div></section>
-    <section id="v-inventory" class="view"><div class="wrap"><div class="head"><b>Твои кейсы</b><span id="invMeta" class="meta"></span></div><div id="inv" class="inv"></div></div></section>
-    <section id="v-profile" class="view"><div class="wrap"><div class="head"><b>Профиль</b><button id="copyId" class="muted">Копировать ID</button></div><div id="stats" class="stats"></div><div id="known" class="list"></div></div></section>
-  </main>
-</div>
-
-<div id="roulette" class="overlay hidden">
-  <div class="sheet">
-    <div class="rhead">
-      <b id="rTitle">Открытие кейса</b>
-    </div>
-    <div class="stage">
-      <div id="rPointer" class="arrow"></div>
-      <div id="rWin" class="win"><div id="rTrack" class="track"></div></div>
-    </div>
-    <div class="rfoot">
-      <div id="rRes" class="res"></div>
-      <div class="r-actions"><button id="spin">Открыть</button><button id="spinSkip" class="muted hidden">Пропуск</button><button id="rClose2" class="muted">Закрыть</button></div>
-    </div>
-  </div>
-</div>
-
-<div id="gift" class="overlay hidden">
-  <div class="modal panel">
-    <h3>Подарить кейс</h3>
-    <p>Введи ID получателя.</p>
-    <div class="fld"><label for="gId">ID игрока</label><input id="gId" inputmode="numeric" autocomplete="off" placeholder="734921"></div>
-    <div id="gErr" class="err"></div>
-    <div class="line"><button id="gCancel" class="muted">Отмена</button><button id="gSend">Подарить</button></div>
-  </div>
-</div>
-
-<div id="toast" class="toast"></div>
-
-<script>
-const STORAGE="case_stars_data_v2";
-const RESET_BUILD="build_reset_2026_02_25";
-const OLD_KEYS=["case_stars_data_v1"];
-const CLIENT_KEY="case_client_id_v1";
-const API_KEY="case_api_root_v1";
-const PASSIVE_MS=300000;
-const PASSIVE_ADD=5;
-const SELL_MS=180000;
-const STAR="Icons/Звезда.png";
-
-const ITEMS={
-  bear:{n:"Мишка",s:15,i:"Icons/bear.png"},
-  heart:{n:"Сердечко",s:15,i:"Icons/heart.png"},
-  flower:{n:"Цветок",s:25,i:"Icons/flower.png"},
-  gift:{n:"Подарок",s:50,i:"Icons/gift.png"},
-  cake:{n:"Торт",s:50,i:"Icons/cake.png"},
-  rocket:{n:"Ракета",s:50,i:"Icons/rocket.png"},
-  gold_cup:{n:"Золотой кубок",s:100,i:"Icons/gold_cup.png"},
-  candy:{n:"Леденец",s:280,i:"Icons/candy.png"},
-  gold_muscle:{n:"Золотой мускол",s:18751,i:"Icons/gold_muscle.png"},
-  pink_bear:{n:"Розовая мишка",s:3995,i:"Icons/pink_bear.png"},
-  clock:{n:"Часы",s:4791,i:"Icons/clock.png"},
-  emerald_bear:{n:"Изумруд мишка",s:310,i:"Icons/изумрудовый мишка.png"},
-  emerald_muscle:{n:"Изумруд мускол",s:320,i:"Icons/изумрудовый мускол.png"},
-  emerald_kettle:{n:"Изумруд чайник",s:400,i:"Icons/Изумрудовый чайник в.png"},
-  crystal_cube:{n:"Кристал куб",s:610,i:"Icons/кристальный куб.png"},
-  crystal_candy:{n:"Кристал леденец",s:612,i:"Icons/кристальный леденец.png"},
-  crystal_cake:{n:"Кристал торт",s:700,i:"Icons/кристальный торт.png"}
-};
-
-const CASES={
-  wood:{k:"wood",n:"Деревянный кейс",p:5,i:"Icons/Деревьяный Кейс.png",d:[{i:"bear",c:5},{i:"heart",c:5},{i:"flower",c:1}]},
-  metal:{k:"metal",n:"Металлический кейс",p:16,i:"Icons/металлический кейс.png",d:[{i:"flower",c:5},{i:"gift",c:5},{i:"cake",c:1}]},
-  gold:{k:"gold",n:"Золотой кейс",p:40,i:"Icons/золотой кейс.png",d:[{i:"cake",c:5},{i:"rocket",c:5},{i:"gold_cup",c:1}]},
-  diamond:{k:"diamond",n:"Алмазный кейс",p:400,i:"Icons/алмазный кейс.png",d:[{i:"gold_cup",c:5},{i:"rocket",c:2},{i:"gift",c:4},{i:"candy",c:1}]},
-  emerald:{k:"emerald",n:"Изумрудовый кейс",p:300,i:"Icons/Изумрудовый кейс.png",d:[{i:"emerald_bear",c:10},{i:"emerald_muscle",c:4},{i:"emerald_kettle",c:1}]},
-  crystal:{k:"crystal",n:"Кристал кейс",p:600,i:"Icons/кристальный кейс.png",d:[{i:"crystal_cube",c:10},{i:"crystal_candy",c:6},{i:"crystal_cake",c:1}]},
-  divine:{k:"divine",n:"Божественный кейс",p:15000,i:"Icons/божественый кейс.png",d:[{i:"clock",c:5},{i:"pink_bear",c:5},{i:"gold_muscle",c:1}]}
-};
-
-const ORDER=["wood","metal","gold","emerald","diamond","crystal","divine"];
-
-const R={
-  pre:by("preloader"),
-  lBar:by("loadBar"),
-  lTxt:by("loadText"),
-  app:by("app"),
-  auth:by("auth"),
-  aForm:by("authForm"),
-  nick:by("nick"),
-  aErr:by("authErr"),
-  hNick:by("hNick"),
-  hId:by("hId"),
-  hStars:by("hStars"),
-  modeMark:by("modeMark"),
-  tabs:[...document.querySelectorAll(".tabs button")],
-  views:{cases:by("v-cases"),inventory:by("v-inventory"),profile:by("v-profile")},
-  cases:by("cases"),
-  invMeta:by("invMeta"),
-  inv:by("inv"),
-  stats:by("stats"),
-  known:by("known"),
-  copyId:by("copyId"),
-  roulette:by("roulette"),
-  rTitle:by("rTitle"),
-  rWin:by("rWin"),
-  rPointer:by("rPointer"),
-  rTrack:by("rTrack"),
-  rRes:by("rRes"),
-  spin:by("spin"),
-  spinSkip:by("spinSkip"),
-  rClose2:by("rClose2"),
-  gift:by("gift"),
-  gId:by("gId"),
-  gErr:by("gErr"),
-  gCancel:by("gCancel"),
-  gSend:by("gSend"),
-  toast:by("toast")
-};
-
-let useServer=false;
-let tickBusy=false;
-let lastServerTickAt=0;
-const API_ROOT=resolveApiRoot();
-const CLIENT_ID=getClientId();
-let db={activeProfileId:null,profiles:{}};
-let me=null;
-let view="cases";
-let toastTimer=null;
-let giftId=null;
-let roll={invId:null,caseKey:null,spin:false,w:null,serverState:null,timer:null,targetX:0};
-
-const ASSETS=[...new Set([STAR,...Object.values(CASES).map(c=>c.i),...Object.values(ITEMS).map(i=>i.i)])];
-
-start();
-
-async function start(){
-  await preload();
-  R.pre.classList.add("hidden");
-  R.app.classList.remove("hidden");
-  bind();
-  await initState();
-  renderModeMark();
-  hydrate();
-  setInterval(tick,1000);
+ITEMS = {
+    "bear": {"s": 15},
+    "heart": {"s": 15},
+    "flower": {"s": 25},
+    "gift": {"s": 50},
+    "cake": {"s": 50},
+    "rocket": {"s": 50},
+    "gold_cup": {"s": 100},
+    "candy": {"s": 280},
+    "gold_muscle": {"s": 18751},
+    "pink_bear": {"s": 3995},
+    "clock": {"s": 4791},
+    "emerald_bear": {"s": 310},
+    "emerald_muscle": {"s": 320},
+    "emerald_kettle": {"s": 400},
+    "crystal_cube": {"s": 610},
+    "crystal_candy": {"s": 612},
+    "crystal_cake": {"s": 700},
 }
 
-async function initState(){
-  useServer=await detectServer();
-  if(useServer){
-    const srv=await fetchServerState();
-    if(srv){
-      db=srv;
-      return;
+CASES = {
+    "wood": {"p": 5, "d": [{"i": "bear", "c": 5}, {"i": "heart", "c": 5}, {"i": "flower", "c": 1}]},
+    "metal": {"p": 16, "d": [{"i": "flower", "c": 5}, {"i": "gift", "c": 5}, {"i": "cake", "c": 1}]},
+    "gold": {"p": 40, "d": [{"i": "cake", "c": 5}, {"i": "rocket", "c": 5}, {"i": "gold_cup", "c": 1}]},
+    "diamond": {"p": 400, "d": [{"i": "gold_cup", "c": 5}, {"i": "rocket", "c": 2}, {"i": "gift", "c": 4}, {"i": "candy", "c": 1}]},
+    "emerald": {"p": 300, "d": [{"i": "emerald_bear", "c": 10}, {"i": "emerald_muscle", "c": 4}, {"i": "emerald_kettle", "c": 1}]},
+    "crystal": {"p": 600, "d": [{"i": "crystal_cube", "c": 10}, {"i": "crystal_candy", "c": 6}, {"i": "crystal_cake", "c": 1}]},
+    "divine": {"p": 3000, "d": [{"i": "clock", "c": 5}, {"i": "pink_bear", "c": 5}, {"i": "gold_muscle", "c": 1}]},
+}
+
+WELCOME_REWARD = {"1": 200, "2": 100, "3": 40}
+NICK_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]{2,19}$")
+
+STATE_LOCK = threading.Lock()
+STATE = {"profiles": {}, "active_by_client": {}}
+RATE_LOCK = threading.Lock()
+RATE_BUCKET = {}
+
+
+def now_ms() -> int:
+    return int(time.time() * 1000)
+
+
+def ensure_storage() -> None:
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if not DATA_PATH.exists():
+        DATA_PATH.write_text(json.dumps({"profiles": {}, "active_by_client": {}}, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def load_state() -> dict:
+    ensure_storage()
+    try:
+        raw = DATA_PATH.read_text(encoding="utf-8")
+        obj = json.loads(raw)
+        if not isinstance(obj, dict):
+            raise ValueError("invalid root")
+        if not isinstance(obj.get("profiles"), dict):
+            obj["profiles"] = {}
+        if not isinstance(obj.get("active_by_client"), dict):
+            obj["active_by_client"] = {}
+        for pid, prof in list(obj["profiles"].items()):
+            if not isinstance(prof, dict):
+                del obj["profiles"][pid]
+                continue
+            shape_profile(prof, pid)
+        return obj
+    except Exception:
+        return {"profiles": {}, "active_by_client": {}}
+
+
+def save_state(state: dict) -> None:
+    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
+    tmp = DATA_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(DATA_PATH)
+
+
+def shape_profile(profile: dict, pid: str) -> None:
+    ts = now_ms()
+    profile["id"] = str(profile.get("id") or pid)
+    profile["nick"] = str(profile.get("nick") or "Player")
+    profile["stars"] = int(profile.get("stars", 15))
+    profile["inventory"] = profile.get("inventory") if isinstance(profile.get("inventory"), list) else []
+    profile["createdAt"] = int(profile.get("createdAt", ts))
+    profile["lastPassiveAt"] = int(profile.get("lastPassiveAt", profile["createdAt"]))
+    profile["totalEarned"] = int(profile.get("totalEarned", 0))
+    profile["totalSpent"] = int(profile.get("totalSpent", 0))
+    profile["opened"] = int(profile.get("opened", 0))
+    profile["bought"] = int(profile.get("bought", 0))
+    profile["welcomeClaimed"] = bool(profile.get("welcomeClaimed", False))
+    profile["welcomeChoice"] = str(profile.get("welcomeChoice", "")) if profile.get("welcomeChoice") else None
+    for item in profile["inventory"]:
+        if not isinstance(item, dict):
+            continue
+        item["id"] = str(item.get("id") or make_inv_id())
+        item["caseKey"] = str(item.get("caseKey") or "wood")
+        item["boughtAt"] = int(item.get("boughtAt") or ts)
+        item["source"] = str(item.get("source") or "buy")
+        if "giftFrom" in item and item["giftFrom"] is not None:
+            item["giftFrom"] = str(item["giftFrom"])
+
+
+def make_public_state(state: dict, client_id: str) -> dict:
+    profiles = {}
+    for pid, prof in state["profiles"].items():
+        shape_profile(prof, pid)
+        profiles[pid] = deepcopy(prof)
+    active = state["active_by_client"].get(client_id)
+    if active not in profiles:
+        active = None
+    return {"activeProfileId": active, "profiles": profiles}
+
+
+def ensure_rate_limit(ip: str) -> tuple[bool, str]:
+    ts = int(time.time())
+    with RATE_LOCK:
+        arr = RATE_BUCKET.get(ip, [])
+        arr = [x for x in arr if ts - x < 60]
+        if len(arr) >= RATE_LIMIT_RPM:
+            RATE_BUCKET[ip] = arr
+            return False, "Слишком много запросов. Подождите минуту."
+        arr.append(ts)
+        RATE_BUCKET[ip] = arr
+    return True, ""
+
+
+def get_profile_for_client(state: dict, client_id: str) -> tuple[str | None, dict | None]:
+    pid = state["active_by_client"].get(client_id)
+    if not pid:
+        return None, None
+    prof = state["profiles"].get(pid)
+    if not prof:
+        return None, None
+    shape_profile(prof, pid)
+    return pid, prof
+
+
+def make_profile(state: dict, nick: str) -> dict:
+    pid = new_profile_id(state)
+    ts = now_ms()
+    return {
+        "id": pid,
+        "nick": nick,
+        "stars": 15,
+        "inventory": [],
+        "createdAt": ts,
+        "lastPassiveAt": ts,
+        "totalEarned": 0,
+        "totalSpent": 0,
+        "opened": 0,
+        "bought": 0,
+        "welcomeClaimed": False,
+        "welcomeChoice": None,
     }
-    useServer=false;
-  }
-  db=load();
-  show("Локальный режим: между устройствами подарки и общий прогресс не работают.");
-}
 
-function bind(){
-  R.tabs.forEach(b=>b.onclick=()=>swap(b.dataset.v));
-  R.aForm.onsubmit=e=>{e.preventDefault();create()};
-  R.cases.onclick=e=>{const b=e.target.closest("button[data-buy]");if(b)buy(b.dataset.buy)};
-  R.inv.onclick=e=>{
-    const b=e.target.closest("button[data-a]");
-    if(!b)return;
-    const id=b.dataset.id;
-    const a=b.dataset.a;
-    if(a==="open")openCase(id);
-    if(a==="gift")openGift(id);
-    if(a==="sell")sell(id);
-  };
-  R.copyId.onclick=copyId;
-  R.spin.onclick=spin;
-  R.spinSkip.onclick=skipSpin;
-  R.rClose2.onclick=closeRoll;
-  R.gCancel.onclick=closeGift;
-  R.gSend.onclick=sendGift;
-  R.gId.oninput=()=>R.gErr.textContent="";
-}
 
-function preload(){
-  return new Promise(ok=>{
-    if(!ASSETS.length){ok();return}
-    let done=0;
-    ASSETS.forEach(src=>{
-      const img=new Image();
-      const end=()=>{
-        done++;
-        const p=Math.round(done/ASSETS.length*100);
-        R.lBar.style.width=p+"%";
-        R.lTxt.textContent="Загрузка иконок "+p+"%";
-        if(done>=ASSETS.length)setTimeout(ok,220);
-      };
-      img.onload=end;
-      img.onerror=end;
-      img.src=src;
-    });
-  });
-}
+def new_profile_id(state: dict) -> str:
+    while True:
+        pid = str(random.randint(100000, 999999))
+        if pid not in state["profiles"]:
+            return pid
 
-function hydrate(){
-  me=db.activeProfileId&&db.profiles[db.activeProfileId]?db.profiles[db.activeProfileId]:null;
-  if(!me){
-    R.auth.classList.remove("hidden");
-    renderCases();
-    renderInv();
-    renderProf();
-    return;
-  }
-  shape(me);
-  if(!useServer){
-    me.lastPassiveAt=Date.now();
-    save();
-  }
-  R.auth.classList.add("hidden");
-  renderAll();
-}
 
-async function create(){
-  const n=R.nick.value.trim();
-  if(!/^[A-Za-z][A-Za-z0-9_]{2,19}$/.test(n)){
-    R.aErr.textContent="Ник 3-20 символов: A-Z, 0-9, _.";
-    return;
-  }
-  if(useServer){
-    try{
-      await serverAction("/create",{nick:n});
-      R.auth.classList.add("hidden");
-      R.aErr.textContent="";
-      show("Профиль создан. Баланс: 15 звезд.");
-      renderAll();
-    }catch(e){
-      R.aErr.textContent=e.message||"Ошибка сервера";
-    }
-    return;
-  }
-  if(taken(n)){
-    R.aErr.textContent="Такой ник уже занят.";
-    return;
-  }
-  const id=newId();
-  const now=Date.now();
-  me={id,nick:n,stars:15,inventory:[],createdAt:now,lastPassiveAt:now,totalEarned:0,totalSpent:0,opened:0,bought:0};
-  db.profiles[id]=me;
-  db.activeProfileId=id;
-  save();
-  R.auth.classList.add("hidden");
-  R.aErr.textContent="";
-  show("Профиль создан. Баланс: 15 звезд.");
-  renderAll();
-}
+def make_inv_id() -> str:
+    return "c_" + uuid.uuid4().hex[:12]
 
-function taken(n){
-  const x=n.toLowerCase();
-  return Object.values(db.profiles).some(p=>String(p.nick||"").toLowerCase()===x);
-}
 
-function newId(){
-  let id="";
-  do id=String(Math.floor(100000+Math.random()*900000));
-  while(db.profiles[id]);
-  return id;
-}
+def passive_tick(profile: dict, visible: bool = True) -> int:
+    if not visible:
+        profile["lastPassiveAt"] = now_ms()
+        return 0
+    now = now_ms()
+    passed = max(0, now - int(profile.get("lastPassiveAt", now)))
+    n = passed // PASSIVE_MS
+    if n <= 0:
+        return 0
+    add = n * PASSIVE_ADD
+    profile["stars"] += add
+    profile["totalEarned"] += add
+    profile["lastPassiveAt"] += n * PASSIVE_MS
+    return int(add)
 
-function swap(v){
-  view=v;
-  R.tabs.forEach(b=>b.classList.toggle("active",b.dataset.v===v));
-  Object.entries(R.views).forEach(([k,e])=>e.classList.toggle("active",k===v));
-  if(v==="inventory")renderInv();
-  if(v==="profile")renderProf();
-}
 
-function renderAll(){
-  renderHead();
-  renderCases();
-  renderInv();
-  renderProf();
-}
+def weighted_pool(case_key: str) -> list[str]:
+    case = CASES.get(case_key)
+    if not case:
+        return []
+    pool = []
+    for d in case["d"]:
+        pool.extend([d["i"]] * int(d["c"]))
+    return pool
 
-function renderHead(){
-  if(!me){
-    R.hNick.textContent="-";
-    R.hId.textContent="ID: -";
-    R.hStars.textContent="0";
-    return;
-  }
-  R.hNick.textContent=me.nick;
-  R.hId.textContent="ID: "+me.id;
-  R.hStars.textContent=fmt(me.stars);
-}
 
-function renderModeMark(){
-  if(!R.modeMark)return;
-  if(useServer){
-    R.modeMark.textContent="SERVER";
-    R.modeMark.style.borderColor="#39c58a";
-    R.modeMark.style.color="#b8f2da";
-  }else{
-    R.modeMark.textContent="LOCAL";
-    R.modeMark.style.borderColor="#5f79ad";
-    R.modeMark.style.color="#d6e6ff";
-  }
-}
+def find_inventory_index(profile: dict, inv_id: str) -> int:
+    for i, item in enumerate(profile["inventory"]):
+        if str(item.get("id")) == inv_id:
+            return i
+    return -1
 
-function renderCases(){
-  R.cases.innerHTML=ORDER.map((k,idx)=>{
-    const c=CASES[k];
-    const d=c.d.map(x=>`<span class="drop"><img src="${ITEMS[x.i].i}" alt=""><b>${x.c}x</b> ${ITEMS[x.i].n}</span>`).join("");
-    return `<article class="case" style="animation-delay:${idx*38}ms"><div class="pic"><img src="${c.i}" alt="${c.n}"></div><div class="body"><h3>${c.n}</h3><div class="price"><img src="${STAR}" alt=""> ${fmt(c.p)} звезд</div><div class="drops">${d}</div><button data-buy="${c.k}" ${me?"":"disabled"}>Купить кейс</button></div></article>`;
-  }).join("");
-}
 
-function renderInv(){
-  if(!me){
-    R.invMeta.textContent="";
-    R.inv.innerHTML='<div class="empty">Сначала создай профиль.</div>';
-    return;
-  }
-  const arr=[...me.inventory].sort((a,b)=>b.boughtAt-a.boughtAt);
-  R.invMeta.textContent="Всего кейсов: "+arr.length;
-  if(!arr.length){
-    R.inv.innerHTML='<div class="empty">Инвентарь пуст. Купи кейс во вкладке "Кейсы".</div>';
-    return;
-  }
-  R.inv.innerHTML=arr.map(it=>{
-    const c=CASES[it.caseKey];
-    const ok=canSell(it);
-    const left=sellLeft(it);
-    const st=ok?"Продать за "+fmt(c.p):"Продажа через "+time(left);
-    const src=it.source==="gift"?"Подарок от ID "+(it.giftFrom||"-"):"Покупка";
-    return `<article class="item"><div class="ibox"><img src="${c.i}" alt="${c.n}"></div><div class="icont"><div class="itop"><h4>${c.n}</h4><span class="iid">CASE ${it.id.slice(0,8)}</span></div><div class="meta">${src}</div><div class="act"><button data-a="open" data-id="${it.id}">Открыть</button><button class="muted" data-a="gift" data-id="${it.id}">Подарить</button><button class="danger" data-a="sell" data-id="${it.id}" ${ok?"":"disabled"}>${st}</button></div></div></article>`;
-  }).join("");
-}
+class Handler(BaseHTTPRequestHandler):
+    server_version = "CaseStars/2.0"
 
-function renderProf(){
-  if(!me){
-    R.stats.innerHTML="";
-    R.known.innerHTML='<div class="row">Нет профиля</div>';
-    return;
-  }
-  const s=[["Ник",me.nick],["ID",me.id],["Баланс",fmt(me.stars)],["Куплено",fmt(me.bought)],["Открыто",fmt(me.opened)],["Потрачено",fmt(me.totalSpent)],["Заработано",fmt(me.totalEarned)],["В инвентаре",fmt(me.inventory.length)]];
-  R.stats.innerHTML=s.map(([k,v])=>`<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
-  const o=Object.values(db.profiles).filter(p=>p.id!==me.id);
-  R.known.innerHTML=o.length?o.map(p=>`<div class="row"><div>${p.nick}</div><small>ID ${p.id}</small></div>`).join(""):'<div class="row"><div>Других локальных профилей нет</div><small>Для теста подарков нужен второй профиль на этом устройстве.</small></div>';
-}
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self._cors_headers()
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
-async function buy(k){
-  if(!me)return;
-  const c=CASES[k];
-  if(!c)return;
-  if(useServer){
-    try{
-      await serverAction("/buy",{case_key:k});
-      renderAll();
-      show("Кейс куплен: "+c.n);
-    }catch(e){
-      show(e.message||"Ошибка покупки");
-    }
-    return;
-  }
-  passive(false);
-  if(me.stars<c.p){
-    show("Недостаточно звезд.");
-    return;
-  }
-  me.stars-=c.p;
-  me.totalSpent+=c.p;
-  me.bought+=1;
-  me.inventory.push({id:uid(),caseKey:c.k,boughtAt:Date.now(),source:"buy"});
-  save();
-  renderHead();
-  renderInv();
-  renderProf();
-  show("Кейс куплен: "+c.n);
-}
+    def do_GET(self):
+        path = urlparse(self.path).path
+        if path.startswith("/api/"):
+            self._handle_api_get(path)
+            return
+        self._handle_static(path)
 
-function openCase(id){
-  if(!me||roll.spin)return;
-  const it=findCase(id);
-  if(!it)return;
-  roll.invId=id;
-  roll.caseKey=it.caseKey;
-  roll.w=null;
-  roll.serverState=null;
-  R.rTitle.textContent="Открытие: "+CASES[it.caseKey].n;
-  R.rRes.textContent="";
-  R.spin.disabled=false;
-  R.spinSkip.classList.add("hidden");
-  fill(preview(it.caseKey));
-  R.rTrack.style.transition="none";
-  R.rTrack.style.transform="translate3d(0,0,0)";
-  R.roulette.classList.remove("hidden");
-  closeBtn(true);
-}
+    def do_POST(self):
+        path = urlparse(self.path).path
+        if not path.startswith("/api/"):
+            self._send_json(404, {"ok": False, "error": "Not Found"})
+            return
+        ok, msg = ensure_rate_limit(self.client_address[0])
+        if not ok:
+            self._send_json(429, {"ok": False, "error": msg})
+            return
+        self._handle_api_post(path)
 
-function preview(key){
-  const p=pool(CASES[key]);
-  const r=[];
-  for(let i=0;i<30;i++)r.push(rand(p));
-  return r;
-}
+    def log_message(self, fmt, *args):
+        return
 
-async function spin(){
-  if(!me||roll.spin||!roll.invId||!roll.caseKey)return;
-  const p=pool(CASES[roll.caseKey]);
-  if(useServer){
-    try{
-      const out=await apiPost("/open",{client_id:CLIENT_ID,inventory_id:roll.invId});
-      if(!out.ok){
-        show(out.error||"Ошибка открытия");
-        return;
-      }
-      roll.w=out.winner;
-      roll.serverState=out.state||null;
-    }catch(e){
-      show("Сервер недоступен");
-      return;
-    }
-  }else{
-    roll.w=rand(p);
-  }
-  roll.spin=true;
-  roll.targetX=0;
-  R.spin.disabled=true;
-  R.spinSkip.classList.remove("hidden");
-  R.rRes.textContent="Лента крутится...";
-  closeBtn(false);
+    def _cors_headers(self):
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
-  const len=120;
-  const stop=95+Math.floor(Math.random()*10);
-  const arr=[];
-  for(let i=0;i<len;i++)arr.push(rand(p));
-  arr[stop]=roll.w;
-  fill(arr);
+    def _send_json(self, code: int, obj: dict):
+        body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
+        self.send_response(code)
+        self._cors_headers()
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
-  const first=R.rTrack.querySelector(".slot");
-  const slotW=first?first.getBoundingClientRect().width:84;
-  const style=getComputedStyle(R.rTrack);
-  const gap=parseFloat(style.columnGap||style.gap||"8")||8;
-  const pad=parseFloat(style.paddingLeft||"0")||0;
-  const step=slotW+gap;
+    def _read_json(self) -> dict:
+        length = int(self.headers.get("Content-Length") or "0")
+        if length <= 0:
+            return {}
+        raw = self.rfile.read(length)
+        try:
+            data = json.loads(raw.decode("utf-8"))
+            return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
 
-  const winRect=R.rWin.getBoundingClientRect();
-  const pointerRect=R.rPointer.getBoundingClientRect();
-  const pointerX=(pointerRect.left+pointerRect.width/2)-winRect.left;
-  const jitter=(Math.random()-0.5)*slotW*0.36;
-  let target=stop*step-(pointerX-slotW/2-pad)+jitter;
-  const maxOffset=Math.max(0,R.rTrack.scrollWidth-R.rWin.clientWidth);
-  target=Math.max(0,Math.min(target,maxOffset));
-  roll.targetX=target;
+    def _handle_static(self, path: str):
+        p = unquote(path)
+        if p in ("/", ""):
+            file_path = INDEX_PATH
+        else:
+            rel = p.lstrip("/")
+            file_path = (BASE_DIR / rel).resolve()
+            if not str(file_path).startswith(str(BASE_DIR)):
+                self.send_error(403)
+                return
+            if file_path.name == DATA_PATH.name and file_path.parent == DATA_PATH.parent:
+                self.send_error(403)
+                return
+        if not file_path.exists() or not file_path.is_file():
+            self.send_error(404)
+            return
+        ctype = mimetypes.guess_type(file_path.name)[0] or "application/octet-stream"
+        try:
+            raw = file_path.read_bytes()
+        except Exception:
+            self.send_error(500)
+            return
+        self.send_response(200)
+        if path.startswith("/api/"):
+            self._cors_headers()
+        self.send_header("Content-Type", ctype)
+        if file_path == INDEX_PATH:
+            self.send_header("Cache-Control", "no-store")
+        else:
+            self.send_header("Cache-Control", "public, max-age=86400")
+        self.send_header("Content-Length", str(len(raw)))
+        self.end_headers()
+        self.wfile.write(raw)
 
-  R.rTrack.style.transition="none";
-  R.rTrack.style.transform="translate3d(0,0,0)";
-  R.rTrack.getBoundingClientRect();
-  R.rTrack.style.transition="transform 6000ms cubic-bezier(.08,.74,.1,1)";
-  R.rTrack.style.transform=`translate3d(${-target}px,0,0)`;
+    def _handle_api_get(self, path: str):
+        parsed = urlparse(self.path)
+        qs = parse_qs(parsed.query)
 
-  clearTimeout(roll.timer);
-  roll.timer=setTimeout(doneSpin,6100);
-}
+        if path == "/api/health":
+            self._send_json(200, {"ok": True, "version": "2.0"})
+            return
 
-function skipSpin(){
-  if(!roll.spin)return;
-  clearTimeout(roll.timer);
-  R.rTrack.style.transition="none";
-  R.rTrack.style.transform=`translate3d(${-roll.targetX}px,0,0)`;
-  doneSpin();
-}
+        if path == "/api/state":
+            client_id = str((qs.get("client_id") or [""])[0]).strip()
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "state": st})
+            return
 
-function doneSpin(){
-  if(!roll.spin||!me||!roll.w||!roll.invId)return;
-  clearTimeout(roll.timer);
-  const win=ITEMS[roll.w];
-  if(useServer){
-    if(roll.serverState){
-      db=roll.serverState;
-      me=db.activeProfileId&&db.profiles[db.activeProfileId]?db.profiles[db.activeProfileId]:null;
-    }
-    renderAll();
-    R.rRes.textContent=`Выпало: ${win.n} +${fmt(win.s)} звезд`;
-    show(`Открыт кейс: ${win.n} +${fmt(win.s)} звезд`);
-    roll.spin=false;
-    R.spinSkip.classList.add("hidden");
-    roll.serverState=null;
-    closeBtn(true);
-    return;
-  }
-  if(!removeCase(roll.invId)){
-    roll.spin=false;
-    closeRoll();
-    return;
-  }
-  me.stars+=win.s;
-  me.totalEarned+=win.s;
-  me.opened+=1;
-  save();
-  renderAll();
-  R.rRes.textContent=`Выпало: ${win.n} +${fmt(win.s)} звезд`;
-  show(`Открыт кейс: ${win.n} +${fmt(win.s)} звезд`);
-  roll.spin=false;
-  R.spinSkip.classList.add("hidden");
-  closeBtn(true);
-}
+        self._send_json(404, {"ok": False, "error": "Unknown endpoint"})
 
-function fill(list){
-  R.rTrack.innerHTML=list.map(k=>`<div class="slot"><img src="${ITEMS[k].i}" alt="${ITEMS[k].n}"><span>${ITEMS[k].n}</span></div>`).join("");
-}
+    def _handle_api_post(self, path: str):
+        payload = self._read_json()
+        client_id = str(payload.get("client_id") or "").strip()
 
-function closeBtn(on){
-  R.rClose2.disabled=!on;
-}
+        if path == "/api/create":
+            nick = str(payload.get("nick") or "").strip()
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            if not NICK_RE.match(nick):
+                self._send_json(400, {"ok": False, "error": "Ник 3-20 символов: A-Z, 0-9, _."})
+                return
+            with STATE_LOCK:
+                for prof in STATE["profiles"].values():
+                    if str(prof.get("nick", "")).lower() == nick.lower():
+                        self._send_json(409, {"ok": False, "error": "Такой ник уже занят."})
+                        return
+                profile = make_profile(STATE, nick)
+                STATE["profiles"][profile["id"]] = profile
+                STATE["active_by_client"][client_id] = profile["id"]
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "state": st})
+            return
 
-function closeRoll(){
-  if(roll.spin)return;
-  clearTimeout(roll.timer);
-  R.roulette.classList.add("hidden");
-  R.rTrack.style.transition="none";
-  R.rTrack.style.transform="translate3d(0,0,0)";
-  R.rRes.textContent="";
-  R.spinSkip.classList.add("hidden");
-  roll={invId:null,caseKey:null,spin:false,w:null,serverState:null,timer:null,targetX:0};
-  R.spin.disabled=false;
-  closeBtn(true);
-}
+        if path == "/api/tick":
+            visible = bool(payload.get("visible", True))
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                _, prof = get_profile_for_client(STATE, client_id)
+                if not prof:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                gained = passive_tick(prof, visible=visible)
+                if gained > 0:
+                    save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "gained": gained, "state": st})
+            return
 
-function openGift(id){
-  if(!me)return;
-  const it=findCase(id);
-  if(!it)return;
-  giftId=id;
-  R.gId.value="";
-  R.gErr.textContent="";
-  R.gift.classList.remove("hidden");
-  R.gId.focus();
-}
+        if path == "/api/buy":
+            case_key = str(payload.get("case_key") or "").strip()
+            if case_key not in CASES:
+                self._send_json(400, {"ok": False, "error": "Неизвестный кейс"})
+                return
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                _, prof = get_profile_for_client(STATE, client_id)
+                if not prof:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                passive_tick(prof, visible=True)
+                price = int(CASES[case_key]["p"])
+                if prof["stars"] < price:
+                    self._send_json(400, {"ok": False, "error": "Недостаточно звезд."})
+                    return
+                prof["stars"] -= price
+                prof["totalSpent"] += price
+                prof["bought"] += 1
+                prof["inventory"].append(
+                    {
+                        "id": make_inv_id(),
+                        "caseKey": case_key,
+                        "boughtAt": now_ms(),
+                        "source": "buy",
+                    }
+                )
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "state": st})
+            return
 
-function closeGift(){
-  giftId=null;
-  R.gift.classList.add("hidden");
-  R.gErr.textContent="";
-  R.gId.value="";
-}
+        if path == "/api/open":
+            inv_id = str(payload.get("inventory_id") or "").strip()
+            if not inv_id:
+                self._send_json(400, {"ok": False, "error": "inventory_id обязателен"})
+                return
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                _, prof = get_profile_for_client(STATE, client_id)
+                if not prof:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                idx = find_inventory_index(prof, inv_id)
+                if idx == -1:
+                    self._send_json(404, {"ok": False, "error": "Кейс не найден"})
+                    return
+                item = prof["inventory"][idx]
+                case_key = str(item.get("caseKey") or "")
+                pool = weighted_pool(case_key)
+                if not pool:
+                    self._send_json(400, {"ok": False, "error": "Некорректный кейс"})
+                    return
+                winner = random.choice(pool)
+                reward = int(ITEMS[winner]["s"])
+                prof["inventory"].pop(idx)
+                prof["stars"] += reward
+                prof["totalEarned"] += reward
+                prof["opened"] += 1
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "winner": winner, "state": st})
+            return
 
-async function sendGift(){
-  if(!me||!giftId)return;
-  const id=R.gId.value.trim();
-  if(!/^\d{6}$/.test(id)){
-    R.gErr.textContent="ID должен состоять из 6 цифр.";
-    return;
-  }
-  if(id===me.id){
-    R.gErr.textContent="Нельзя подарить кейс самому себе.";
-    return;
-  }
-  if(useServer){
-    try{
-      await serverAction("/gift",{inventory_id:giftId,target_id:id});
-      closeGift();
-      renderAll();
-      show("Кейс отправлен ID "+id);
-    }catch(e){
-      R.gErr.textContent=e.message||"Ошибка отправки";
-    }
-    return;
-  }
-  const to=db.profiles[id];
-  if(!to){
-    R.gErr.textContent="ID не найден. В локальном режиме доступны только профили этого браузера.";
-    return;
-  }
-  const ix=me.inventory.findIndex(x=>x.id===giftId);
-  if(ix===-1){
-    closeGift();
-    renderInv();
-    return;
-  }
-  const c=me.inventory[ix];
-  me.inventory.splice(ix,1);
-  shape(to);
-  to.inventory.push({id:uid(),caseKey:c.caseKey,boughtAt:Date.now(),source:"gift",giftFrom:me.id});
-  save();
-  const n=CASES[c.caseKey].n;
-  closeGift();
-  renderAll();
-  show("Кейс отправлен ID "+id+": "+n);
-}
+        if path == "/api/gift":
+            inv_id = str(payload.get("inventory_id") or "").strip()
+            target_id = str(payload.get("target_id") or "").strip()
+            if not inv_id or not target_id:
+                self._send_json(400, {"ok": False, "error": "inventory_id и target_id обязательны"})
+                return
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                pid, from_prof = get_profile_for_client(STATE, client_id)
+                if not from_prof or not pid:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                if target_id == pid:
+                    self._send_json(400, {"ok": False, "error": "Нельзя подарить кейс самому себе."})
+                    return
+                to_prof = STATE["profiles"].get(target_id)
+                if not to_prof:
+                    self._send_json(404, {"ok": False, "error": "ID не найден."})
+                    return
+                idx = find_inventory_index(from_prof, inv_id)
+                if idx == -1:
+                    self._send_json(404, {"ok": False, "error": "Кейс не найден"})
+                    return
+                sent = from_prof["inventory"].pop(idx)
+                shape_profile(to_prof, target_id)
+                to_prof["inventory"].append(
+                    {
+                        "id": make_inv_id(),
+                        "caseKey": sent.get("caseKey"),
+                        "boughtAt": now_ms(),
+                        "source": "gift",
+                        "giftFrom": pid,
+                    }
+                )
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "state": st})
+            return
 
-async function sell(id){
-  if(!me)return;
-  if(useServer){
-    try{
-      await serverAction("/sell",{inventory_id:id});
-      renderAll();
-      show("Кейс продан");
-    }catch(e){
-      show(e.message||"Ошибка продажи");
-    }
-    return;
-  }
-  const ix=me.inventory.findIndex(x=>x.id===id);
-  if(ix===-1)return;
-  const it=me.inventory[ix];
-  if(!canSell(it)){
-    show("Продажа доступна только 3 минуты.");
-    return;
-  }
-  const price=CASES[it.caseKey].p;
-  me.inventory.splice(ix,1);
-  me.stars+=price;
-  save();
-  renderAll();
-  show("Кейс продан за "+fmt(price)+" звезд");
-}
+        if path == "/api/sell":
+            inv_id = str(payload.get("inventory_id") or "").strip()
+            if not inv_id:
+                self._send_json(400, {"ok": False, "error": "inventory_id обязателен"})
+                return
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                _, prof = get_profile_for_client(STATE, client_id)
+                if not prof:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                idx = find_inventory_index(prof, inv_id)
+                if idx == -1:
+                    self._send_json(404, {"ok": False, "error": "Кейс не найден"})
+                    return
+                item = prof["inventory"][idx]
+                bought_at = int(item.get("boughtAt", 0))
+                if now_ms() - bought_at > SELL_MS:
+                    self._send_json(400, {"ok": False, "error": "Продажа доступна только 3 минуты."})
+                    return
+                case_key = str(item.get("caseKey") or "")
+                if case_key not in CASES:
+                    self._send_json(400, {"ok": False, "error": "Некорректный кейс"})
+                    return
+                prof["inventory"].pop(idx)
+                prof["stars"] += int(CASES[case_key]["p"])
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "state": st})
+            return
 
-function canSell(it){return Date.now()-it.boughtAt<=SELL_MS}
-function sellLeft(it){const r=SELL_MS-(Date.now()-it.boughtAt);return r>0?r:0}
-function findCase(id){return me?me.inventory.find(x=>x.id===id)||null:null}
-function removeCase(id){if(!me)return false;const ix=me.inventory.findIndex(x=>x.id===id);if(ix===-1)return false;me.inventory.splice(ix,1);return true}
-function pool(c){const p=[];c.d.forEach(x=>{for(let i=0;i<x.c;i++)p.push(x.i)});return p}
-function rand(a){return a[Math.floor(Math.random()*a.length)]}
+        if path == "/api/welcome":
+            choice = str(payload.get("choice") or "").strip()
+            if choice not in WELCOME_REWARD:
+                self._send_json(400, {"ok": False, "error": "choice должен быть 1, 2 или 3"})
+                return
+            if not client_id:
+                self._send_json(400, {"ok": False, "error": "client_id обязателен"})
+                return
+            with STATE_LOCK:
+                _, prof = get_profile_for_client(STATE, client_id)
+                if not prof:
+                    self._send_json(404, {"ok": False, "error": "Профиль не найден"})
+                    return
+                if prof.get("welcomeClaimed"):
+                    self._send_json(400, {"ok": False, "error": "Подарок уже выбран"})
+                    return
+                reward = int(WELCOME_REWARD[choice])
+                prof["welcomeClaimed"] = True
+                prof["welcomeChoice"] = choice
+                prof["welcomeAt"] = now_ms()
+                prof["stars"] += reward
+                prof["totalEarned"] += reward
+                save_state(STATE)
+                st = make_public_state(STATE, client_id)
+            self._send_json(200, {"ok": True, "reward": reward, "state": st})
+            return
 
-function passive(note){
-  if(!me)return;
-  const now=Date.now();
-  if(!me.lastPassiveAt)me.lastPassiveAt=now;
-  const n=Math.floor((now-me.lastPassiveAt)/PASSIVE_MS);
-  if(n<=0)return;
-  const add=n*PASSIVE_ADD;
-  me.stars+=add;
-  me.totalEarned+=add;
-  me.lastPassiveAt+=n*PASSIVE_MS;
-  save();
-  renderHead();
-  renderProf();
-  if(note)show("Пассивный доход: +"+fmt(add)+" звезд");
-}
+        if path == "/api/admin/balance_all":
+            mode = str(payload.get("mode") or "").strip().lower()
+            amount_raw = payload.get("amount")
+            token = str(payload.get("dev_token") or "")
+            if DEV_TOKEN and token != DEV_TOKEN:
+                self._send_json(403, {"ok": False, "error": "Неверный dev_token"})
+                return
+            if mode not in {"add", "set"}:
+                self._send_json(400, {"ok": False, "error": "mode должен быть add или set"})
+                return
+            try:
+                amount = int(amount_raw)
+            except Exception:
+                self._send_json(400, {"ok": False, "error": "amount должен быть числом"})
+                return
+            with STATE_LOCK:
+                affected = 0
+                for pid, prof in STATE["profiles"].items():
+                    shape_profile(prof, pid)
+                    if mode == "add":
+                        prof["stars"] = max(0, int(prof["stars"]) + amount)
+                    else:
+                        prof["stars"] = max(0, amount)
+                    affected += 1
+                save_state(STATE)
+                st = make_public_state(STATE, client_id) if client_id else {"activeProfileId": None, "profiles": deepcopy(STATE["profiles"])}
+            self._send_json(200, {"ok": True, "affected": affected, "state": st})
+            return
 
-async function copyId(){
-  if(!me)return;
-  const x=me.id;
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    try{await navigator.clipboard.writeText(x);show("ID скопирован: "+x);return}catch(e){}
-  }
-  show("ID: "+x);
-}
+        self._send_json(404, {"ok": False, "error": "Unknown endpoint"})
 
-async function tick(){
-  if(!me)return;
-  if(useServer){
-    if(document.visibilityState!=="visible")return;
-    if(tickBusy)return;
-    if(Date.now()-lastServerTickAt<10000){
-      if(view==="inventory")renderInv();
-      return;
-    }
-    tickBusy=true;
-    lastServerTickAt=Date.now();
-    try{
-      const out=await apiPost("/tick",{client_id:CLIENT_ID,visible:true});
-      if(out.ok&&out.state){
-        db=out.state;
-        me=db.activeProfileId&&db.profiles[db.activeProfileId]?db.profiles[db.activeProfileId]:null;
-        if(me){
-          renderHead();
-          renderProf();
-          if(view==="inventory")renderInv();
-          if(out.gained>0)show("Пассивный доход: +"+fmt(out.gained)+" звезд");
-        }
-      }
-    }catch(_){}
-    tickBusy=false;
-    return;
-  }
-  if(document.visibilityState!=="visible"){
-    me.lastPassiveAt=Date.now();
-    return;
-  }
-  passive(true);
-  if(view==="inventory")renderInv();
-}
 
-function show(t){
-  R.toast.textContent=t;
-  R.toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>R.toast.classList.remove("show"),2300);
-}
+def run() -> None:
+    global STATE
+    with STATE_LOCK:
+        STATE = load_state()
+    server = ThreadingHTTPServer((HOST, PORT), Handler)
+    print(f"Case Stars server on http://{HOST}:{PORT}")
+    print(f"Data file: {DATA_PATH}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
-function fmt(v){return Number(v||0).toLocaleString("ru-RU")}
-function time(ms){const s=Math.max(0,Math.ceil(ms/1000)),m=Math.floor(s/60),x=s%60;return String(m).padStart(2,"0")+":"+String(x).padStart(2,"0")}
-function uid(){return Math.random().toString(36).slice(2,8)+Date.now().toString(36)}
 
-function shape(p){
-  if(!Array.isArray(p.inventory))p.inventory=[];
-  if(typeof p.stars!=="number")p.stars=15;
-  if(typeof p.createdAt!=="number")p.createdAt=Date.now();
-  if(typeof p.lastPassiveAt!=="number")p.lastPassiveAt=p.createdAt;
-  if(typeof p.totalEarned!=="number")p.totalEarned=0;
-  if(typeof p.totalSpent!=="number")p.totalSpent=0;
-  if(typeof p.opened!=="number")p.opened=0;
-  if(typeof p.bought!=="number")p.bought=0;
-}
-
-function getClientId(){
-  let id=localStorage.getItem(CLIENT_KEY);
-  if(id&&/^[A-Za-z0-9_-]{10,80}$/.test(id))return id;
-  id="c_"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
-  localStorage.setItem(CLIENT_KEY,id);
-  return id;
-}
-
-function normalizeApiRoot(v){
-  let x=String(v||"").trim();
-  if(!x)x="/api";
-  if(x.endsWith("/"))x=x.slice(0,-1);
-  if(!x.startsWith("http://")&&!x.startsWith("https://")&&!x.startsWith("/"))x="/"+x;
-  return x;
-}
-
-function resolveApiRoot(){
-  try{
-    const q=new URLSearchParams(location.search).get("api");
-    if(q)localStorage.setItem(API_KEY,q.trim());
-    const fromStore=localStorage.getItem(API_KEY)||"";
-    return normalizeApiRoot(q||fromStore||"/api");
-  }catch(_){
-    return "/api";
-  }
-}
-
-async function detectServer(){
-  try{
-    const ctrl=new AbortController();
-    const t=setTimeout(()=>ctrl.abort(),1200);
-    const r=await fetch(API_ROOT+"/health",{signal:ctrl.signal,cache:"no-store"});
-    clearTimeout(t);
-    if(!r.ok)return false;
-    const j=await r.json();
-    return !!j.ok;
-  }catch(_){
-    return false;
-  }
-}
-
-async function apiGet(path){
-  const r=await fetch(API_ROOT+path,{cache:"no-store"});
-  return await r.json();
-}
-
-async function apiPost(path,payload){
-  const r=await fetch(API_ROOT+path,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
-  });
-  return await r.json();
-}
-
-async function fetchServerState(){
-  try{
-    const out=await apiGet("/state?client_id="+encodeURIComponent(CLIENT_ID));
-    if(out.ok&&out.state)return out.state;
-    return null;
-  }catch(_){
-    return null;
-  }
-}
-
-async function serverAction(path,payload){
-  const out=await apiPost(path,Object.assign({client_id:CLIENT_ID},payload||{}));
-  if(!out.ok)throw new Error(out.error||"Ошибка");
-  if(out.state){
-    db=out.state;
-    me=db.activeProfileId&&db.profiles[db.activeProfileId]?db.profiles[db.activeProfileId]:null;
-  }
-  return out;
-}
-
-function load(){
-  try{
-    if(localStorage.getItem("case_stars_reset_build")!==RESET_BUILD){
-      OLD_KEYS.forEach(k=>localStorage.removeItem(k));
-      localStorage.removeItem(STORAGE);
-      localStorage.setItem("case_stars_reset_build",RESET_BUILD);
-    }
-    const raw=localStorage.getItem(STORAGE);
-    if(!raw)return {activeProfileId:null,profiles:{}};
-    const o=JSON.parse(raw);
-    if(!o||typeof o!=="object")return {activeProfileId:null,profiles:{}};
-    if(!o.profiles||typeof o.profiles!=="object")o.profiles={};
-    if(!("activeProfileId" in o))o.activeProfileId=null;
-    Object.values(o.profiles).forEach(shape);
-    return o;
-  }catch(e){
-    return {activeProfileId:null,profiles:{}};
-  }
-}
-
-function save(){if(!useServer)localStorage.setItem(STORAGE,JSON.stringify(db))}
-function by(id){return document.getElementById(id)}
-</script>
-</body>
-</html>
+if __name__ == "__main__":
+    run()
