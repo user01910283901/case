@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
@@ -72,6 +72,18 @@ body{
   background:linear-gradient(180deg,rgba(12,22,49,.95),rgba(12,22,49,.72));
   backdrop-filter:blur(8px);
 }
+.mode-badge{
+  margin-left:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  border:1px solid #4d74b8;
+  border-radius:999px;
+  padding:2px 7px;
+  font-size:10px;
+  color:#d9e8ff;
+  background:#0e2148;
+}
 .brand{display:flex;align-items:center;gap:10px;min-width:0}
 .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(180deg,var(--accent-2),var(--accent));display:grid;place-items:center;box-shadow:0 10px 26px rgba(47,217,183,.35)}
 .logo svg{width:18px;height:18px;fill:#05241d}
@@ -101,6 +113,7 @@ main{margin-top:12px}
   display:flex;
   flex-direction:column;
   transition:.2s transform,.2s box-shadow;
+  animation:cardIn .45s ease both;
 }
 .case:hover{transform:translateY(-2px);box-shadow:0 12px 26px rgba(0,0,0,.26)}
 .case .pic{height:136px;display:grid;place-items:center;padding:10px 10px 2px;background:radial-gradient(420px 170px at 50% -10%,rgba(255,255,255,.14),transparent 68%)}
@@ -153,6 +166,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .slot img{width:66px;height:66px;object-fit:contain;pointer-events:none}
 .slot span{position:absolute;left:2px;right:2px;bottom:3px;text-align:center;font-size:9px;color:#d1e2ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rfoot{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.r-actions{display:flex;gap:8px;flex-wrap:wrap}
 .res{min-height:18px;font-size:14px;color:#d6e7ff}
 .panel{width:100%;max-width:430px;padding:18px}
 .panel h3{margin:0 0 6px}
@@ -165,6 +179,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,217,183,.18)
 .line{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}
 .toast{position:fixed;left:50%;bottom:18px;transform:translate(-50%,22px);opacity:0;pointer-events:none;z-index:100;border:1px solid #4169ae;border-radius:10px;background:#10244b;padding:9px 12px;font-size:13px;max-width:min(92vw,560px);text-align:center;transition:.24s opacity,.24s transform}
 .toast.show{opacity:1;transform:translate(-50%,0)}
+@keyframes cardIn{from{opacity:.0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media (max-width:720px){
   .app{padding:9px 9px 16px}
   .cards{grid-template-columns:repeat(auto-fill,minmax(166px,1fr));gap:10px}
@@ -209,7 +224,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,217,183,.18)
   <header class="top">
     <div class="brand">
       <div class="logo"><svg viewBox="0 0 24 24"><path d="M12 2l2.7 5.46L21 8.37l-4.5 4.38 1.06 6.2L12 16.12 6.44 19l1.06-6.25L3 8.37l6.3-.91L12 2z"/></svg></div>
-      <div><b>Case Stars Simulator</b><span>Кейсы, инвентарь, подарки</span></div>
+      <div><b>Case Stars Simulator</b><span>Кейсы, инвентарь, подарки <span id="modeMark" class="mode-badge">...</span></span></div>
     </div>
     <div class="prof">
       <div class="meta"><b id="hNick">-</b><small id="hId">ID: -</small></div>
@@ -241,7 +256,7 @@ input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(47,217,183,.18)
     </div>
     <div class="rfoot">
       <div id="rRes" class="res"></div>
-      <div style="display:flex;gap:8px"><button id="spin">Открыть</button><button id="rClose2" class="muted">Закрыть</button></div>
+      <div class="r-actions"><button id="spin">Открыть</button><button id="spinSkip" class="muted hidden">Пропуск</button><button id="rClose2" class="muted">Закрыть</button></div>
     </div>
   </div>
 </div>
@@ -263,7 +278,7 @@ const STORAGE="case_stars_data_v2";
 const RESET_BUILD="build_reset_2026_02_25";
 const OLD_KEYS=["case_stars_data_v1"];
 const CLIENT_KEY="case_client_id_v1";
-const API_BASE="/api";
+const API_KEY="case_api_root_v1";
 const PASSIVE_MS=300000;
 const PASSIVE_ADD=5;
 const SELL_MS=180000;
@@ -280,7 +295,13 @@ const ITEMS={
   candy:{n:"Леденец",s:280,i:"Icons/candy.png"},
   gold_muscle:{n:"Золотой мускол",s:18751,i:"Icons/gold_muscle.png"},
   pink_bear:{n:"Розовая мишка",s:3995,i:"Icons/pink_bear.png"},
-  clock:{n:"Часы",s:4791,i:"Icons/clock.png"}
+  clock:{n:"Часы",s:4791,i:"Icons/clock.png"},
+  emerald_bear:{n:"Изумруд мишка",s:310,i:"Icons/изумрудовый мишка.png"},
+  emerald_muscle:{n:"Изумруд мускол",s:320,i:"Icons/изумрудовый мускол.png"},
+  emerald_kettle:{n:"Изумруд чайник",s:400,i:"Icons/Изумрудовый чайник в.png"},
+  crystal_cube:{n:"Кристал куб",s:610,i:"Icons/кристальный куб.png"},
+  crystal_candy:{n:"Кристал леденец",s:612,i:"Icons/кристальный леденец.png"},
+  crystal_cake:{n:"Кристал торт",s:700,i:"Icons/кристальный торт.png"}
 };
 
 const CASES={
@@ -288,10 +309,12 @@ const CASES={
   metal:{k:"metal",n:"Металлический кейс",p:16,i:"Icons/металлический кейс.png",d:[{i:"flower",c:5},{i:"gift",c:5},{i:"cake",c:1}]},
   gold:{k:"gold",n:"Золотой кейс",p:40,i:"Icons/золотой кейс.png",d:[{i:"cake",c:5},{i:"rocket",c:5},{i:"gold_cup",c:1}]},
   diamond:{k:"diamond",n:"Алмазный кейс",p:400,i:"Icons/алмазный кейс.png",d:[{i:"gold_cup",c:5},{i:"rocket",c:2},{i:"gift",c:4},{i:"candy",c:1}]},
+  emerald:{k:"emerald",n:"Изумрудовый кейс",p:300,i:"Icons/Изумрудовый кейс.png",d:[{i:"emerald_bear",c:10},{i:"emerald_muscle",c:4},{i:"emerald_kettle",c:1}]},
+  crystal:{k:"crystal",n:"Кристал кейс",p:600,i:"Icons/кристальный кейс.png",d:[{i:"crystal_cube",c:10},{i:"crystal_candy",c:6},{i:"crystal_cake",c:1}]},
   divine:{k:"divine",n:"Божественный кейс",p:15000,i:"Icons/божественый кейс.png",d:[{i:"clock",c:5},{i:"pink_bear",c:5},{i:"gold_muscle",c:1}]}
 };
 
-const ORDER=["wood","metal","gold","diamond","divine"];
+const ORDER=["wood","metal","gold","emerald","diamond","crystal","divine"];
 
 const R={
   pre:by("preloader"),
@@ -305,6 +328,7 @@ const R={
   hNick:by("hNick"),
   hId:by("hId"),
   hStars:by("hStars"),
+  modeMark:by("modeMark"),
   tabs:[...document.querySelectorAll(".tabs button")],
   views:{cases:by("v-cases"),inventory:by("v-inventory"),profile:by("v-profile")},
   cases:by("cases"),
@@ -320,6 +344,7 @@ const R={
   rTrack:by("rTrack"),
   rRes:by("rRes"),
   spin:by("spin"),
+  spinSkip:by("spinSkip"),
   rClose2:by("rClose2"),
   gift:by("gift"),
   gId:by("gId"),
@@ -332,13 +357,14 @@ const R={
 let useServer=false;
 let tickBusy=false;
 let lastServerTickAt=0;
+const API_ROOT=resolveApiRoot();
 const CLIENT_ID=getClientId();
 let db={activeProfileId:null,profiles:{}};
 let me=null;
 let view="cases";
 let toastTimer=null;
 let giftId=null;
-let roll={invId:null,caseKey:null,spin:false,w:null,serverState:null};
+let roll={invId:null,caseKey:null,spin:false,w:null,serverState:null,timer:null,targetX:0};
 
 const ASSETS=[...new Set([STAR,...Object.values(CASES).map(c=>c.i),...Object.values(ITEMS).map(i=>i.i)])];
 
@@ -350,6 +376,7 @@ async function start(){
   R.app.classList.remove("hidden");
   bind();
   await initState();
+  renderModeMark();
   hydrate();
   setInterval(tick,1000);
 }
@@ -365,6 +392,7 @@ async function initState(){
     useServer=false;
   }
   db=load();
+  show("Локальный режим: между устройствами подарки и общий прогресс не работают.");
 }
 
 function bind(){
@@ -382,6 +410,7 @@ function bind(){
   };
   R.copyId.onclick=copyId;
   R.spin.onclick=spin;
+  R.spinSkip.onclick=skipSpin;
   R.rClose2.onclick=closeRoll;
   R.gCancel.onclick=closeGift;
   R.gSend.onclick=sendGift;
@@ -499,11 +528,24 @@ function renderHead(){
   R.hStars.textContent=fmt(me.stars);
 }
 
+function renderModeMark(){
+  if(!R.modeMark)return;
+  if(useServer){
+    R.modeMark.textContent="SERVER";
+    R.modeMark.style.borderColor="#39c58a";
+    R.modeMark.style.color="#b8f2da";
+  }else{
+    R.modeMark.textContent="LOCAL";
+    R.modeMark.style.borderColor="#5f79ad";
+    R.modeMark.style.color="#d6e6ff";
+  }
+}
+
 function renderCases(){
-  R.cases.innerHTML=ORDER.map(k=>{
+  R.cases.innerHTML=ORDER.map((k,idx)=>{
     const c=CASES[k];
     const d=c.d.map(x=>`<span class="drop"><img src="${ITEMS[x.i].i}" alt=""><b>${x.c}x</b> ${ITEMS[x.i].n}</span>`).join("");
-    return `<article class="case"><div class="pic"><img src="${c.i}" alt="${c.n}"></div><div class="body"><h3>${c.n}</h3><div class="price"><img src="${STAR}" alt=""> ${fmt(c.p)} звезд</div><div class="drops">${d}</div><button data-buy="${c.k}" ${me?"":"disabled"}>Купить кейс</button></div></article>`;
+    return `<article class="case" style="animation-delay:${idx*38}ms"><div class="pic"><img src="${c.i}" alt="${c.n}"></div><div class="body"><h3>${c.n}</h3><div class="price"><img src="${STAR}" alt=""> ${fmt(c.p)} звезд</div><div class="drops">${d}</div><button data-buy="${c.k}" ${me?"":"disabled"}>Купить кейс</button></div></article>`;
   }).join("");
 }
 
@@ -582,6 +624,7 @@ function openCase(id){
   R.rTitle.textContent="Открытие: "+CASES[it.caseKey].n;
   R.rRes.textContent="";
   R.spin.disabled=false;
+  R.spinSkip.classList.add("hidden");
   fill(preview(it.caseKey));
   R.rTrack.style.transition="none";
   R.rTrack.style.transform="translate3d(0,0,0)";
@@ -616,7 +659,9 @@ async function spin(){
     roll.w=rand(p);
   }
   roll.spin=true;
+  roll.targetX=0;
   R.spin.disabled=true;
+  R.spinSkip.classList.remove("hidden");
   R.rRes.textContent="Лента крутится...";
   closeBtn(false);
 
@@ -641,6 +686,7 @@ async function spin(){
   let target=stop*step-(pointerX-slotW/2-pad)+jitter;
   const maxOffset=Math.max(0,R.rTrack.scrollWidth-R.rWin.clientWidth);
   target=Math.max(0,Math.min(target,maxOffset));
+  roll.targetX=target;
 
   R.rTrack.style.transition="none";
   R.rTrack.style.transform="translate3d(0,0,0)";
@@ -648,11 +694,21 @@ async function spin(){
   R.rTrack.style.transition="transform 6000ms cubic-bezier(.08,.74,.1,1)";
   R.rTrack.style.transform=`translate3d(${-target}px,0,0)`;
 
-  setTimeout(doneSpin,6100);
+  clearTimeout(roll.timer);
+  roll.timer=setTimeout(doneSpin,6100);
+}
+
+function skipSpin(){
+  if(!roll.spin)return;
+  clearTimeout(roll.timer);
+  R.rTrack.style.transition="none";
+  R.rTrack.style.transform=`translate3d(${-roll.targetX}px,0,0)`;
+  doneSpin();
 }
 
 function doneSpin(){
-  if(!me||!roll.w||!roll.invId)return;
+  if(!roll.spin||!me||!roll.w||!roll.invId)return;
+  clearTimeout(roll.timer);
   const win=ITEMS[roll.w];
   if(useServer){
     if(roll.serverState){
@@ -663,6 +719,7 @@ function doneSpin(){
     R.rRes.textContent=`Выпало: ${win.n} +${fmt(win.s)} звезд`;
     show(`Открыт кейс: ${win.n} +${fmt(win.s)} звезд`);
     roll.spin=false;
+    R.spinSkip.classList.add("hidden");
     roll.serverState=null;
     closeBtn(true);
     return;
@@ -680,6 +737,7 @@ function doneSpin(){
   R.rRes.textContent=`Выпало: ${win.n} +${fmt(win.s)} звезд`;
   show(`Открыт кейс: ${win.n} +${fmt(win.s)} звезд`);
   roll.spin=false;
+  R.spinSkip.classList.add("hidden");
   closeBtn(true);
 }
 
@@ -693,11 +751,13 @@ function closeBtn(on){
 
 function closeRoll(){
   if(roll.spin)return;
+  clearTimeout(roll.timer);
   R.roulette.classList.add("hidden");
   R.rTrack.style.transition="none";
   R.rTrack.style.transform="translate3d(0,0,0)";
   R.rRes.textContent="";
-  roll={invId:null,caseKey:null,spin:false,w:null,serverState:null};
+  R.spinSkip.classList.add("hidden");
+  roll={invId:null,caseKey:null,spin:false,w:null,serverState:null,timer:null,targetX:0};
   R.spin.disabled=false;
   closeBtn(true);
 }
@@ -744,7 +804,7 @@ async function sendGift(){
   }
   const to=db.profiles[id];
   if(!to){
-    R.gErr.textContent="Профиль с таким ID не найден.";
+    R.gErr.textContent="ID не найден. В локальном режиме доступны только профили этого браузера.";
     return;
   }
   const ix=me.inventory.findIndex(x=>x.id===giftId);
@@ -888,11 +948,30 @@ function getClientId(){
   return id;
 }
 
+function normalizeApiRoot(v){
+  let x=String(v||"").trim();
+  if(!x)x="/api";
+  if(x.endsWith("/"))x=x.slice(0,-1);
+  if(!x.startsWith("http://")&&!x.startsWith("https://")&&!x.startsWith("/"))x="/"+x;
+  return x;
+}
+
+function resolveApiRoot(){
+  try{
+    const q=new URLSearchParams(location.search).get("api");
+    if(q)localStorage.setItem(API_KEY,q.trim());
+    const fromStore=localStorage.getItem(API_KEY)||"";
+    return normalizeApiRoot(q||fromStore||"/api");
+  }catch(_){
+    return "/api";
+  }
+}
+
 async function detectServer(){
   try{
     const ctrl=new AbortController();
     const t=setTimeout(()=>ctrl.abort(),1200);
-    const r=await fetch(API_BASE+"/health",{signal:ctrl.signal,cache:"no-store"});
+    const r=await fetch(API_ROOT+"/health",{signal:ctrl.signal,cache:"no-store"});
     clearTimeout(t);
     if(!r.ok)return false;
     const j=await r.json();
@@ -903,12 +982,12 @@ async function detectServer(){
 }
 
 async function apiGet(path){
-  const r=await fetch(API_BASE+path,{cache:"no-store"});
+  const r=await fetch(API_ROOT+path,{cache:"no-store"});
   return await r.json();
 }
 
 async function apiPost(path,payload){
-  const r=await fetch(API_BASE+path,{
+  const r=await fetch(API_ROOT+path,{
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(payload)
