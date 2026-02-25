@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: case-stars-api
+    env: python
+    plan: free
+    autoDeploy: true
+    buildCommand: ""
+    startCommand: python secure_server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: CASE_RATE_LIMIT_RPM
+        value: 120
